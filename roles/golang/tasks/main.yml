@@ -1,0 +1,23 @@
+---
+- name: Download Go tarball
+  ansible.builtin.get_url:
+    url: "https://go.dev/dl/{{ go_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/{{ go_version }}.linux-amd64.tar.gz"
+    checksum: "sha256:{{ go_tarball_sha256 }}"
+    mode: "0644"
+
+- name: Extract Go to /usr/local
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ go_version }}.linux-amd64.tar.gz"
+    dest: /usr/local
+    remote_src: true
+    creates: /usr/local/go/bin/go
+
+- name: Symlink go onto the default PATH
+  ansible.builtin.file:
+    src: "/usr/local/go/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+  loop:
+    - go
+    - gofmt
