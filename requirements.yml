@@ -1,0 +1,5 @@
+---
+collections:
+  - name: google.cloud
+  - name: community.docker
+  - name: ansible.posix

@@ -1,0 +1,4 @@
+---
+ar_host: us-central1-docker.pkg.dev
+project_id: ops-lab-506804
+jenkins_home: /var/lib/jenkins

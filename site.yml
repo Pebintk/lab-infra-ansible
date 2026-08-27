@@ -1,0 +1,7 @@
+---
+- hosts: role_jenkins
+  become: true
+  roles:
+    - base
+    - docker
+    - jenkins

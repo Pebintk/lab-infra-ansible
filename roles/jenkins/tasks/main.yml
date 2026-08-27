@@ -1,0 +1,51 @@
+---
+- name: Install Java
+  ansible.builtin.apt:
+    name: "{{ jenkins_java_package }}"
+    state: present
+
+- name: Download Jenkins GPG key
+  ansible.builtin.get_url:
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+    dest: /usr/share/keyrings/jenkins-keyring.asc
+    mode: "0644"
+
+- name: Add Jenkins apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+    filename: jenkins
+    state: present
+
+- name: Install Jenkins
+  ansible.builtin.apt:
+    name: jenkins
+    state: present
+    update_cache: true
+
+- name: Add jenkins user to docker group
+  ansible.builtin.user:
+    name: jenkins
+    groups: docker
+    append: true
+  notify: Restart jenkins
+
+- name: Install docker-credential-gcr
+  ansible.builtin.unarchive:
+    src: >-
+      https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v{{ docker_credential_gcr_version }}/docker-credential-gcr_linux_amd64-{{ docker_credential_gcr_version }}.tar.gz
+    dest: /usr/local/bin
+    remote_src: true
+    mode: "0755"
+    creates: /usr/local/bin/docker-credential-gcr
+
+- name: Configure docker-credential-gcr for Artifact Registry
+  ansible.builtin.command:
+    cmd: "docker-credential-gcr configure-docker --registries={{ ar_host }}"
+    creates: "{{ jenkins_home }}/.docker/config.json"
+  become_user: jenkins
+
+- name: Ensure Jenkins service is running and enabled
+  ansible.builtin.service:
+    name: jenkins
+    state: started
+    enabled: true

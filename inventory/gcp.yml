@@ -1,0 +1,16 @@
+# inventory/gcp.yml
+plugin: google.cloud.gcp_compute
+projects:
+  - ops-lab-506804
+zones:
+  - us-central1-a
+auth_kind: application
+filters:
+  - status = RUNNING
+keyed_groups:
+  - key: labels.role
+    prefix: role
+hostnames:
+  - name
+compose:
+  ansible_host: networkInterfaces[0].accessConfigs[0].natIP
